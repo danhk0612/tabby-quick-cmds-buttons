@@ -3,9 +3,6 @@ import { ConfigService } from 'tabby-core'
 import { createApp } from 'vue'
 // import { ref } from 'vue'
 import {Tabs, Tab} from 'vue3-tabs-component';
-import PrimeVue from 'primevue/config';
-import 'primevue/resources/primevue.min.css';
-import 'primevue/resources/themes/saga-blue/theme.css'; // Choose your preferred theme
 import 'tabs-component.css';
 
 @Injectable({ providedIn: 'root'})
@@ -331,7 +328,6 @@ export class CmdBtnService {
             }
         }
         this.app = createApp(appConfig)
-        this.app.use(PrimeVue);
         this.app.component('tabs', Tabs)
         .component('tab', Tab)
         .mount('#app');
