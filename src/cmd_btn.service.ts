@@ -29,55 +29,42 @@ export class CmdBtnService {
         document.body.appendChild(markerEl)
 
         const div = document.createElement('div')
-        div.setAttribute("style", 'position:absolute;top:40px;right:10px;z-index:99999;max-height:70vh;min-height:40px;width:650px;overflow-y:auto;overflow-x:hidden;flex-shrink:0;-webkit-app-region:no-drag;')
+        div.className = 'quick-cmd-panel'
         div.setAttribute("id", 'app-parent')
         console.log('✓ Created #app-parent div')
 
-        // Create header separately outside of Vue
-        const header = document.createElement('div')
-        header.setAttribute("id", 'app-parent-header')
-        header.setAttribute("style", 'background:#f5f5f5;padding:8px;border-bottom:1px solid #ccc;')
-        header.textContent = "Quick Commands Header"
-        console.log('✓ Created header element')
-
         const appDiv = document.createElement('div')
         appDiv.setAttribute("id", 'app')
-        appDiv.style.height = '100%'
-        appDiv.style.width = '100%'
-        appDiv.style.display = 'flex'
-        appDiv.style.flexDirection = 'column'
+        appDiv.className = 'quick-cmd-app'
         div.appendChild(appDiv)
-        div.style.width = '650px'
-        div.style.height = 'auto'
-        div.style.minHeight = '80px'
         document.querySelector('body').appendChild(div)
 
         const templateHTML = `
-            <div style="display:flex;flex-direction:column;height:100%;width:100%;">
+            <div class="quick-cmd-shell">
                 <!-- Header Section -->
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:#f5f5f5;border-bottom:1px solid #ddd;flex-shrink:0;">
-                    <span style="font-weight:bold;font-size:14px;">Quick Commands</span>
-                    <div style="display:flex;gap:4px;align-items:center;">
-                        <label v-show="!minimized" title="When checked, commands are typed into the terminal without pressing Enter, so you can edit them first" style="display:flex;align-items:center;gap:3px;cursor:pointer;font-size:11px;color:#666;white-space:nowrap;">
+                <div id="app-parent-header" class="quick-cmd-header">
+                    <span class="quick-cmd-title">Quick Commands</span>
+                    <div class="quick-cmd-header-actions">
+                        <label v-show="!minimized" title="When checked, commands are typed into the terminal without pressing Enter, so you can edit them first" class="quick-cmd-edit-toggle">
                             <input type="checkbox" v-model="editBeforeSend" />
-                            Edit first
+                            <span>Edit first</span>
                         </label>
-                        <button v-show="!minimized" @click="showCreateCommandDialog" title="Add a new quick command" style="padding:4px 8px;background:#4CAF50;color:white;border:none;border-radius:3px;cursor:pointer;font-weight:bold;">+ Add Command</button>
-                        <button @click="minimized = !minimized" :title="minimized ? 'Expand panel' : 'Minimize panel'" style="padding:4px 8px;background:#f0f0f0;border:1px solid #ccc;border-radius:3px;cursor:pointer;">{{ minimized ? '▢' : '—' }}</button>
-                        <button @click="closePanel" style="padding:4px 8px;background:#f0f0f0;border:1px solid #ccc;border-radius:3px;cursor:pointer;">✕</button>
+                        <button v-show="!minimized" @click="showCreateCommandDialog" title="Add a new quick command" class="btn btn-sm btn-primary quick-cmd-add-button">+ Add Command</button>
+                        <button @click="minimized = !minimized" :title="minimized ? 'Expand panel' : 'Minimize panel'" class="btn btn-sm btn-secondary quick-cmd-window-button">{{ minimized ? '▢' : '—' }}</button>
+                        <button @click="closePanel" title="Close panel" class="btn btn-sm btn-secondary quick-cmd-window-button">✕</button>
                     </div>
                 </div>
 
-                <div v-show="isTabVisible===false && !minimized" :class="{'use-fixed-theme': !isUseSystemTheme}" style="display:flex;flex-wrap:wrap;padding:8px;flex:1;overflow-y:auto;min-height:0;">
-                    <button @click="sendCmd(cmd)" @contextmenu="openCmdContextMenu($event, cmd)" v-for="cmd in cmds" :key="cmd.name" :title="(cmd.description || cmd.text || '') + ' | Right-click to edit/delete'" style="margin:4px">
+                <div v-show="isTabVisible===false && !minimized" :class="{'use-fixed-theme': !isUseSystemTheme}" class="quick-cmd-content quick-cmd-command-list">
+                    <button @click="sendCmd(cmd)" @contextmenu="openCmdContextMenu($event, cmd)" v-for="cmd in cmds" :key="cmd.name" :title="(cmd.description || cmd.text || '') + ' | Right-click to edit/delete'" class="btn btn-sm btn-secondary quick-cmd-command-button">
                         {{ cmd.name }}
                     </button>
                 </div>
-                <div v-show="isTabVisible && !minimized" :class="{'use-fixed-theme': !isUseSystemTheme}" style="flex:1;overflow-y:auto;min-height:0;display:flex;flex-direction:column;">
+                <div v-show="isTabVisible && !minimized" :class="{'use-fixed-theme': !isUseSystemTheme}" class="quick-cmd-content quick-cmd-tabs-container">
                     <tabs ref="cmdTabs" :options="{ useUrlFragment: false }" >
                         <tab v-bind:name="cmdGroup" v-for="(cmds, cmdGroup) in tabToCmds" :key="cmdGroup">
-                            <div style="display:flex;flex-wrap:wrap;padding:8px;">
-                                <button @click="sendCmd(cmd)" @contextmenu="openCmdContextMenu($event, cmd)" v-for="cmd in cmds" :key="cmd.name" :title="(cmd.description || cmd.text || '') + ' | Right-click to edit/delete'" style="margin:4px">
+                            <div class="quick-cmd-command-list">
+                                <button @click="sendCmd(cmd)" @contextmenu="openCmdContextMenu($event, cmd)" v-for="cmd in cmds" :key="cmd.name" :title="(cmd.description || cmd.text || '') + ' | Right-click to edit/delete'" class="btn btn-sm btn-secondary quick-cmd-command-button">
                                     {{ cmd.name }}
                                 </button>
                             </div>
@@ -86,50 +73,50 @@ export class CmdBtnService {
                 </div>
 
                 <!-- Create Command Dialog -->
-                <div v-if="showDialog" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:100000;pointer-events:none;" @click="closeDialog">
-                    <div style="background:white;padding:20px;border-radius:8px;min-width:400px;max-height:90vh;overflow-y:auto;box-shadow:0 2px 10px rgba(0,0,0,0.1);pointer-events:auto;" @click.stop @mousedown.stop @keydown.stop @keyup.stop @keypress.stop>
-                        <h3 style="margin-top:0;margin-bottom:16px;">Create New Command</h3>
-                        <div style="margin-bottom:12px;">
-                            <label style="display:block;margin-bottom:4px;font-weight:bold;font-size:12px;">Command Name</label>
-                            <input v-model="newCmd.name" type="text" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;" placeholder="e.g., List Files" @click.stop />
+                <div v-if="showDialog" class="quick-cmd-dialog-backdrop" @click="closeDialog">
+                    <div class="quick-cmd-dialog" @click.stop @mousedown.stop @keydown.stop @keyup.stop @keypress.stop>
+                        <h3 class="quick-cmd-dialog-title">Create New Command</h3>
+                        <div class="quick-cmd-form-group">
+                            <label class="quick-cmd-form-label">Command Name</label>
+                            <input v-model="newCmd.name" type="text" class="form-control quick-cmd-form-control" placeholder="e.g., List Files" @click.stop />
                         </div>
-                        <div style="margin-bottom:12px;">
-                            <label style="display:block;margin-bottom:4px;font-weight:bold;font-size:12px;">Command Text</label>
-                            <textarea v-model="newCmd.text" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;font-family:monospace;height:80px;" placeholder="e.g., ls -la" @click.stop />
+                        <div class="quick-cmd-form-group">
+                            <label class="quick-cmd-form-label">Command Text</label>
+                            <textarea v-model="newCmd.text" class="form-control quick-cmd-form-control quick-cmd-command-text" placeholder="e.g., ls -la" @click.stop />
                         </div>
-                        <div style="margin-bottom:12px;">
-                            <label style="display:block;margin-bottom:4px;font-weight:bold;font-size:12px;">Description</label>
-                            <input v-model="newCmd.description" type="text" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;" placeholder="What does this command do?" @click.stop />
+                        <div class="quick-cmd-form-group">
+                            <label class="quick-cmd-form-label">Description</label>
+                            <input v-model="newCmd.description" type="text" class="form-control quick-cmd-form-control" placeholder="What does this command do?" @click.stop />
                         </div>
-                        <div style="margin-bottom:12px;">
-                            <label style="display:block;margin-bottom:4px;font-weight:bold;font-size:12px;">Group/Tab</label>
-                            <input v-model="newCmd.group" type="text" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box;" placeholder="e.g., System" @click.stop />
+                        <div class="quick-cmd-form-group">
+                            <label class="quick-cmd-form-label">Group/Tab</label>
+                            <input v-model="newCmd.group" type="text" class="form-control quick-cmd-form-control" placeholder="e.g., System" @click.stop />
                         </div>
-                        <div style="margin-bottom:16px;">
-                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                        <div class="quick-cmd-form-group quick-cmd-form-group-last">
+                            <label class="quick-cmd-checkbox-label">
                                 <input v-model="newCmd.appendCR" type="checkbox" />
-                                <span style="font-size:12px;">Append newline (Enter)</span>
+                                <span>Append newline (Enter)</span>
                             </label>
                         </div>
-                        <div style="display:flex;gap:8px;justify-content:flex-end;">
-                            <button @click="closeDialog" style="padding:8px 16px;background:#f0f0f0;border:1px solid #ccc;border-radius:4px;cursor:pointer;">Cancel</button>
-                            <button @click="saveCommand" style="padding:8px 16px;background:#4CAF50;color:white;border:none;border-radius:4px;cursor:pointer;">Save Command</button>
+                        <div class="quick-cmd-dialog-actions">
+                            <button @click="closeDialog" class="btn btn-secondary">Cancel</button>
+                            <button @click="saveCommand" class="btn btn-primary">Save Command</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Context Menu -->
-                <div v-if="showContextMenu" :style="{'position':'fixed','top':contextMenuY+'px','left':contextMenuX+'px','background':'white','border':'1px solid #ccc','border-radius':'4px','box-shadow':'0 2px 8px rgba(0,0,0,0.15)','z-index':'100001'}" @mouseleave="showContextMenu = false" @mousedown.stop @click.stop>
-                    <div @click="editCommand(contextMenuCmd)" style="padding:8px 16px;cursor:pointer;font-size:12px;user-select:none;" class="context-menu-item">
+                <div v-if="showContextMenu" :style="{'top':contextMenuY+'px','left':contextMenuX+'px'}" class="quick-cmd-context-menu" @mouseleave="showContextMenu = false" @mousedown.stop @click.stop>
+                    <div @click="editCommand(contextMenuCmd)" class="quick-cmd-context-menu-item">
                         Edit
                     </div>
-                    <div @click="deleteCommand(contextMenuCmd)" style="padding:8px 16px;cursor:pointer;font-size:12px;color:#f44336;user-select:none;" class="context-menu-item">
+                    <div @click="deleteCommand(contextMenuCmd)" class="quick-cmd-context-menu-item quick-cmd-context-menu-danger">
                         Delete
                     </div>
                 </div>
 
                 <!-- Resize Handle -->
-                <div v-show="!minimized" id="resize-handle" style="position:absolute;bottom:0;right:0;width:20px;height:20px;background:linear-gradient(135deg,transparent 50%,#ccc 50%);cursor:nwse-resize;border-radius:0 0 8px 0;" @mousedown="startResize"></div>
+                <div v-show="!minimized" id="resize-handle" class="quick-cmd-resize-handle" @mousedown="startResize"></div>
             </div>
         `
         this.div = div
@@ -378,14 +365,14 @@ export class CmdBtnService {
 
         function dragElement(element) {
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            if (document.getElementById(element.id + "header")) {
-                document.getElementById(element.id + "header").onmousedown = dragMouseDown;
+            if (document.getElementById(element.id + "-header")) {
+                document.getElementById(element.id + "-header").onmousedown = dragMouseDown;
             } else {
                 element.onmousedown = dragMouseDown;
             }
 
             function dragMouseDown(e) {
-                if(e.target.tagName === "BUTTON" || e.target.tagName === "A") {
+                if(e.target.tagName === "BUTTON" || e.target.tagName === "A" || e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "LABEL") {
                     return;
                 }
                 if(e.target.closest('.tabs-component-tab') || e.target.closest('.tabs-component-panels')) {
