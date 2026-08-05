@@ -1,5 +1,6 @@
 .tabs-component {
     margin: 0;
+    color: var(--bs-body-color);
 }
 
 .tabs-component-tabs {
@@ -7,130 +8,108 @@
     flex-wrap: wrap;
     align-items: flex-start;
     justify-content: flex-start;
-    border: 0;
-    border-radius: 6px;
-    margin-bottom: -1px;
+    gap: 0 16px;
+    margin: 0;
+    padding: 6px 10px 0;
     max-height: 30vh;
     overflow-y: auto;
+    border: 0;
+    background: var(--theme-bg-more);
 }
 
-.tabs-component-tab, .tabs-component-tab--custom {
-    /*color: #999;*/
-    color: var(--theme-fg-more-2);
-    font-size: 14px;
-    font-weight: 600;
-    margin-right: 0;
+.tabs-component-tab,
+.tabs-component-tab--custom {
+    margin: 0;
+    padding: 0;
     list-style: none;
-}
-
-.tabs-component-tab:not(:last-child) {
-    border-bottom: none;
-}
-
-.tabs-component-tab:hover {
-    color: #666;
-}
-
-.tabs-component-tab.is-active {
-    color: #000;
-}
-
-.tabs-component-tab.is-disabled *, .tabs-component-tab--custom.is-disabled * {
-    color: #cdcdcd;
-    cursor: not-allowed !important;
-}
-
-@media (min-width: 50px) {
-    .tabs-component-tab, .tabs-component-tab--custom {
-        background-color: #fff;
-        color: var(--theme-fg-more-2);
-        border: solid 1px #ddd;
-        border-radius: 3px 3px 0 0;
-        margin-right: .5em;
-        transform: translateY(2px);
-        transition: transform .3s ease;
-    }
-
-    .tabs-component-tab.is-active, .tabs-component-tab--custom.is-active {
-        border-bottom: solid 1px #fff;
-        z-index: 2;
-        transform: translateY(0);
-    }
-}
-
-.tabs-component-tab-a, .tabs-component-tab-a--custom {
-    align-items: center;
-    color: var(--theme-fg-more-2);
-    display: flex;
-    padding: .35em .6em;
+    border: 0;
+    background: transparent;
+    color: var(--theme-fg-more);
     font-size: 12px;
+    font-weight: 600;
+}
+
+.tabs-component-tab-a,
+.tabs-component-tab-a--custom {
+    display: flex;
+    align-items: center;
+    padding: 5px 0 6px;
+    border-bottom: 2px solid transparent;
+    color: inherit;
+    font-size: 12px;
+    line-height: 1.25;
     text-decoration: none;
     white-space: nowrap;
+    transition: color .125s ease, border-color .125s ease;
 }
 
-.tabs-component-panels {
-    padding: 1em 0;
-}
-
-@media (min-width: 50px) {
-    .tabs-component-panels {
-        background-color: #fff;
-        border: solid 1px #ddd;
-        border-radius: 0 6px 6px 6px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, .05);
-        padding: 1em 1em;
-    }
-}
-
-.tabs-component-btn {
-  cursor: pointer;
-  background: #e1ecf4;
-  border-radius: 3px;
-  border: 1px solid #7aa7c7;
-  padding: 4px 8px;
-  color: #39739d;
-}
-
-.tabs-component-btn:hover {
-  background-color: #b3d3ea;
-  color: #2c5777;
-}
-
-.tabs-component-btn:active {
-  background-color: #a0c7e4;
-  box-shadow: none;
-  color: #2c5777;
-}
-
-.tabs-component-tab--custom {
-    border-color: #e1ecf4;
-    color: #68838d;
-}
-
+.tabs-component-tab:hover,
 .tabs-component-tab--custom:hover {
-    border-color: #e1ecf4;
-    color: #39739d;
-}
-
-.tabs-component-tab--custom.is-active {
-    color: #39739d;
-    border-color: #7aa7c7;
-    border-bottom: solid 1px #fff;
-}
-
-.use-fixed-theme .tabs-component-tab-a {
-    color: var(--theme-fg-more-2);
-}
-
-.use-fixed-theme .is-active {
     color: var(--theme-fg);
 }
 
-.use-fixed-theme .tabs-component-panels {
-    background-color: var(--bs-body-bg);
+.tabs-component-tab.is-active,
+.tabs-component-tab--custom.is-active {
+    color: var(--theme-fg);
 }
 
-.use-fixed-theme .tabs-component-tab {
-    background-color: var(--bs-body-bg);
+.tabs-component-tab.is-active .tabs-component-tab-a,
+.tabs-component-tab--custom.is-active .tabs-component-tab-a--custom {
+    border-bottom-color: var(--theme-primary);
 }
 
+.tabs-component-tab.is-disabled *,
+.tabs-component-tab--custom.is-disabled * {
+    color: var(--bs-secondary-color);
+    opacity: .55;
+    cursor: not-allowed !important;
+}
+
+.tabs-component-panels {
+    padding: 8px 10px 10px;
+    border: 0;
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+}
+
+.tabs-component-btn {
+    cursor: pointer;
+    padding: 4px 8px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius, 4px);
+    background: var(--theme-bg-more);
+    color: var(--bs-body-color);
+    transition: background-color .125s ease, border-color .125s ease, color .125s ease;
+}
+
+.tabs-component-btn:hover {
+    border-color: var(--theme-fg-more-2);
+    background: var(--theme-bg-more-2);
+    color: var(--theme-fg);
+}
+
+.tabs-component-btn:active {
+    background: var(--theme-bg-more-2);
+    color: var(--theme-fg);
+    box-shadow: none;
+}
+
+/* Legacy compatibility: the plugin previously toggled this class for theme handling.
+   Both modes now consume Tabby's theme variables so switching Tabby themes remains seamless. */
+.use-fixed-theme,
+.use-fixed-theme .tabs-component-panels,
+.use-fixed-theme .tabs-component-tabs {
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+}
+
+.use-fixed-theme .tabs-component-tab,
+.use-fixed-theme .tabs-component-tab--custom {
+    background: transparent;
+    color: var(--theme-fg-more);
+}
+
+.use-fixed-theme .tabs-component-tab.is-active,
+.use-fixed-theme .tabs-component-tab--custom.is-active {
+    color: var(--theme-fg);
+}
