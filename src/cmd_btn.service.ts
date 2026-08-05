@@ -47,7 +47,7 @@ export class CmdBtnService {
                             <span>Edit first</span>
                         </label>
                         <button v-show="!minimized" @click="showCreateCommandDialog" title="Add a new quick command" class="btn btn-sm btn-primary quick-cmd-add-button">+ Add Command</button>
-                        <button @click="minimized = !minimized" :title="minimized ? 'Expand panel' : 'Minimize panel'" class="btn btn-sm btn-secondary quick-cmd-window-button">{{ minimized ? '▢' : '—' }}</button>
+                        <button @click="toggleMinimized" :title="minimized ? 'Expand panel' : 'Minimize panel'" class="btn btn-sm btn-secondary quick-cmd-window-button">{{ minimized ? '▢' : '—' }}</button>
                         <button @click="closePanel" title="Close panel" class="btn btn-sm btn-secondary quick-cmd-window-button">✕</button>
                     </div>
                 </div>
@@ -57,7 +57,7 @@ export class CmdBtnService {
                         {{ cmd.name }}
                     </button>
                 </div>
-                <div v-show="isTabVisible && !minimized" :class="{'use-fixed-theme': !isUseSystemTheme}" class="quick-cmd-content quick-cmd-tabs-container">
+                <div v-show="isTabVisible && !minimized" :class="[{'use-fixed-theme': !isUseSystemTheme}, {'is-tabs-collapsed': tabsCollapsed}]" class="quick-cmd-content quick-cmd-tabs-container" @click.capture="handleTabHeaderClick">
                     <tabs ref="cmdTabs" :options="{ useUrlFragment: false }" >
                         <tab v-bind:name="cmdGroup" v-for="(cmds, cmdGroup) in tabToCmds" :key="cmdGroup">
                             <div class="quick-cmd-command-list">
@@ -136,8 +136,6 @@ export class CmdBtnService {
                 }
             },
             data() {
-                // const cmdTabs = ref(null)
-                // This function will be called only once.
                 let vueThis = this
                 const updateUI = () => {
                     const tabToCmds = vueThis.updateCmds();
@@ -169,6 +167,7 @@ export class CmdBtnService {
                     contextMenuCmd: null,
                     editBeforeSend: false,
                     minimized: false,
+                    tabsCollapsed: false,
                     newCmd: {
                         name: '',
                         text: '',
@@ -178,15 +177,33 @@ export class CmdBtnService {
                     },
                 }
             },
-            // computed: {
-            //     cmds: (vm) => {
-            //         let cmds = []
-            //         for(const group in vueThis.tabToCmds) 
-            //     }
-            // },
             methods: {
                 sendCmd(cmd) {
                     thisVar.sendCmdToFocusTab(cmd, this.editBeforeSend)
+                },
+                toggleMinimized() {
+                    this.minimized = !this.minimized
+                    if (thisVar.div) {
+                        thisVar.div.classList.toggle('is-minimized', this.minimized)
+                    }
+                },
+                handleTabHeaderClick(event) {
+                    const target = event.target as HTMLElement
+                    const tabLink = target.closest('.tabs-component-tab-a') as HTMLElement
+                    if (!tabLink) {
+                        return
+                    }
+                    const tab = tabLink.closest('.tabs-component-tab') as HTMLElement
+                    const isActive = !!tab && tab.classList.contains('is-active')
+
+                    if (isActive && !this.tabsCollapsed) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                        this.tabsCollapsed = true
+                        return
+                    }
+
+                    this.tabsCollapsed = false
                 },
                 showCreateCommandDialog() {
                     this.newCmd = {
@@ -207,14 +224,11 @@ export class CmdBtnService {
                         alert('Name and command text are required')
                         return
                     }
-                    // Add command to config store
                     if (!thisVar.config.store.qc.cmds) {
                         thisVar.config.store.qc.cmds = []
                     }
-                    // Check if editing existing command
                     const existingIndex = thisVar.config.store.qc.cmds.findIndex(c => c.name === this.newCmd.name)
                     if (existingIndex >= 0) {
-                        // Update existing
                         thisVar.config.store.qc.cmds[existingIndex] = {
                             name: this.newCmd.name,
                             text: this.newCmd.text,
@@ -223,7 +237,6 @@ export class CmdBtnService {
                             appendCR: this.newCmd.appendCR,
                         }
                     } else {
-                        // Add new
                         thisVar.config.store.qc.cmds.push({
                             name: this.newCmd.name,
                             text: this.newCmd.text,
@@ -232,7 +245,6 @@ export class CmdBtnService {
                             appendCR: this.newCmd.appendCR,
                         })
                     }
-                    // Persist changes - this will trigger config.changed$ subscription
                     thisVar.config.save()
                     this.closeDialog()
                 },
@@ -253,14 +265,12 @@ export class CmdBtnService {
                         const index = thisVar.config.store.qc.cmds.findIndex(c => c.name === cmd.name)
                         if (index >= 0) {
                             thisVar.config.store.qc.cmds.splice(index, 1)
-                            // Persist changes - this will trigger config.changed$ subscription
                             thisVar.config.save()
                         }
                     }
                     this.showContextMenu = false
                 },
                 showSettings() {
-                    // Placeholder for settings - could open settings tab or dialog
                     console.log('Settings clicked')
                 },
                 updateCmds() {
@@ -334,8 +344,6 @@ export class CmdBtnService {
 
         console.log('✓ Vue app.mount() called')
         setTimeout(() => {
-            // Header is created by Vue template, no need to create separately
-
             const headerEl = document.getElementById('app-parent-header')
             const finalAppEl = document.getElementById('app')
             const finalAppParentEl = document.getElementById('app-parent')
@@ -354,9 +362,6 @@ export class CmdBtnService {
             }
         }, 500)
 
-        // Button click handlers are managed by Vue template via @click directives
-
-        // Make the DIV element draggable:
         dragElement(document.getElementById("app-parent"));
 
         function dragElement(element) {
@@ -417,30 +422,25 @@ export class CmdBtnService {
     }
     
     addTab (tab: any) {
-        // console.log("adding tab")
         this.tabs.push(tab)
     }
 
     private cleanup() {
-        // Unsubscribe from all stored subscriptions
         for (const subscription of this.subscriptions) {
             subscription.unsubscribe()
         }
         this.subscriptions = []
 
-        // Destroy Vue app instance if it exists
         if (this.app) {
             this.app.unmount()
             this.app = null
         }
 
-        // Remove DOM element if it exists
         if (this.div && this.div.parentNode) {
             this.div.parentNode.removeChild(this.div)
             this.div = null
         }
 
-        // Clear tabs array
         this.tabs = []
     }
 }
