@@ -17,5 +17,10 @@ jobs:
           cache: npm
       - run: npm install
       - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: generated-package-lock
+          path: package-lock.json
+          if-no-files-found: error
 
 # Build-only validation. npm publishing remains handled by nodejs.yml.
