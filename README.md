@@ -21,7 +21,7 @@ Install **tabby-quick-cmds** first and create Quick Commands there. This plugin 
 
 ## Installation
 
-After the npm package is published, install **tabby-quick-cmds-buttons-modern** from Tabby's plugin manager.
+Install **tabby-quick-cmds-buttons-modern** from Tabby's plugin manager.
 
 For development or local testing, clone this repository directly into Tabby's plugin modules directory and build it.
 
@@ -58,14 +58,16 @@ Compiled files are written to `dist/`.
 
 Releases are published to npm from GitHub Actions when a `v*` tag is pushed.
 
-The repository must have an `NPM_TOKEN` Actions secret with permission to publish `tabby-quick-cmds-buttons-modern`.
+npm Trusted Publishing is configured for this repository and `.github/workflows/nodejs.yml`, so the workflow publishes through GitHub OIDC without an `NPM_TOKEN` secret.
 
 Release example:
 
 ```bash
-git tag v1.3.0
-git push origin v1.3.0
+git tag v1.3.1
+git push origin v1.3.1
 ```
+
+The package version in `package.json` must match the release version before tagging.
 
 ## Upstream
 
