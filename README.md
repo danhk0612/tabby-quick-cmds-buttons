@@ -29,7 +29,7 @@ Windows example:
 
 ```bat
 cd %APPDATA%\tabby\plugins\node_modules
-git clone -b theme-modernization https://github.com/danhk0612/tabby-quick-cmds-buttons-modern.git
+git clone https://github.com/danhk0612/tabby-quick-cmds-buttons-modern.git
 cd tabby-quick-cmds-buttons-modern
 npm install
 npm run build
