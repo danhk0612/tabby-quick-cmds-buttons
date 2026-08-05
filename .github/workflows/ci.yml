@@ -2,8 +2,6 @@ name: CI
 
 on:
   push:
-    branches:
-      - theme-modernization
   pull_request:
 
 jobs:
@@ -15,5 +13,5 @@ jobs:
         with:
           node-version: '20.x'
           cache: npm
-      - run: npm install
+      - run: npm ci
       - run: npm run build
