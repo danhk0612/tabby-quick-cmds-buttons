@@ -6,9 +6,6 @@ on:
       - theme-modernization
   pull_request:
 
-permissions:
-  contents: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,16 +17,3 @@ jobs:
           cache: npm
       - run: npm install
       - run: npm run build
-      - name: Commit regenerated package lock
-        if: github.event_name == 'push'
-        run: |
-          if git diff --quiet -- package-lock.json; then
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package-lock.json
-          git commit -m "chore: refresh package lock after dependency cleanup"
-          git push
-
-# Build-only validation. npm publishing remains handled by nodejs.yml.
