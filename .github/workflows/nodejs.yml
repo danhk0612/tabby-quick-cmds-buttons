@@ -1,35 +1,26 @@
-name: Publish Package to npmjs
+name: Publish package to npm
 
 on:
   push:
     tags:
-        - '*'
-
-# on: [push]
+      - 'v*'
 
 permissions:
+  contents: read
   id-token: write
-        
+
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v4
         with:
           node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
-      - run: yarn install
-      #- run: npm publish --provenance --access public
-      #  env:
-      #    NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      
-      # 如果你的项目需要构建，可以在这里添加构建步骤  
-  
-      - run: npm config set //registry.npmjs.org/:_authToken=${NPM_TOKEN}  
-        env:  
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}  
-  
-      - run: npm publish
-
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
