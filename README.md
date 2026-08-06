@@ -8,16 +8,18 @@ This fork updates the original plugin UI so it follows Tabby's active theme inst
 
 - Quick Command groups shown as tabs
 - Command buttons that follow Tabby's current theme
+- `${name}` parameter prompts compatible with `tabby-quick-cmds` command syntax
+- Repeated parameters are prompted once and replaced everywhere in the command
 - Active tab can be clicked again to collapse its command list
 - Compact minimize / restore behavior
 - Add, edit and delete Quick Commands from the panel
-- **Edit first** mode to insert a command without immediately pressing Enter
+- **Edit first** mode to insert a resolved command without immediately pressing Enter
 - Draggable and resizable panel
 - Light, dark and custom Tabby theme support
 
 ## Requirement
 
-Install **tabby-quick-cmds** first and create Quick Commands there. This plugin uses the commands stored in Tabby's `qc.cmds` configuration.
+Install **tabby-quick-cmds** first and create Quick Commands there. This plugin uses the commands stored in Tabby's `qc.cmds` configuration and follows its `${name}` parameter syntax when commands are launched from the button panel.
 
 ## Installation
 
