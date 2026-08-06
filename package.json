@@ -1,6 +1,6 @@
 {
   "name": "tabby-quick-cmds-buttons-modern",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Modernized Tabby plugin that displays Quick Commands as theme-aware, draggable command buttons and tabs.",
   "keywords": [
     "tabby-plugin",
