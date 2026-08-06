@@ -17,11 +17,11 @@ export class CmdBtnService {
     ) {
         // Clean up any previous instance
         this.cleanup()
-        console.log('✓ CmdBtnService loaded with quick-add feature (v1.1.1)')
+        console.log('✓ CmdBtnService loaded with quick-add feature')
 
         // Unique marker to verify THIS version is loaded
         const markerEl = document.createElement('div')
-        markerEl.id = 'PLUGIN_VERSION_MARKER_20250510_184500_TYPING_FIX'
+        markerEl.id = 'PLUGIN_VERSION_MARKER_QUICK_COMMAND_PARAMETERS'
         markerEl.style.display = 'none'
         document.body.appendChild(markerEl)
 
@@ -69,10 +69,10 @@ export class CmdBtnService {
                     </tabs>
                 </div>
 
-                <!-- Create Command Dialog -->
-                <div v-if="showDialog" class="quick-cmd-dialog-backdrop" @click="closeDialog">
+                <!-- Create/Edit Command Dialog -->
+                <div v-if="showDialog" class="quick-cmd-dialog-backdrop">
                     <div class="quick-cmd-dialog" @click.stop @mousedown.stop @keydown.stop @keyup.stop @keypress.stop>
-                        <h3 class="quick-cmd-dialog-title">Create New Command</h3>
+                        <h3 class="quick-cmd-dialog-title">{{ editingExistingCommand ? 'Edit Command' : 'Create New Command' }}</h3>
                         <div class="quick-cmd-form-group">
                             <label class="quick-cmd-form-label">Command Name</label>
                             <input v-model="newCmd.name" type="text" class="form-control quick-cmd-form-control" placeholder="e.g., List Files" @click.stop />
@@ -98,6 +98,22 @@ export class CmdBtnService {
                         <div class="quick-cmd-dialog-actions">
                             <button @click="closeDialog" class="btn btn-secondary">Cancel</button>
                             <button @click="saveCommand" class="btn btn-primary">Save Command</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Cmds-compatible Parameter Dialog -->
+                <div v-if="showParameterDialog" class="quick-cmd-dialog-backdrop">
+                    <div class="quick-cmd-dialog quick-cmd-parameter-dialog" @click.stop @mousedown.stop @keydown.stop @keyup.stop @keypress.stop>
+                        <h3 class="quick-cmd-dialog-title">Command Parameters</h3>
+                        <p class="quick-cmd-dialog-description">Enter values for the variables used by this Quick Command.</p>
+                        <div v-for="parameter in parameterFields" :key="parameter.name" class="quick-cmd-form-group">
+                            <label class="quick-cmd-form-label">{{ parameter.name }}</label>
+                            <input v-model="parameter.value" type="text" class="form-control quick-cmd-form-control" :placeholder="'Value for ${' + parameter.name + '}'" autocomplete="off" @click.stop />
+                        </div>
+                        <div class="quick-cmd-dialog-actions">
+                            <button @click="cancelParameterDialog" class="btn btn-secondary">Cancel</button>
+                            <button @click="executeParameterizedCmd" class="btn btn-primary">Execute</button>
                         </div>
                     </div>
                 </div>
@@ -161,6 +177,11 @@ export class CmdBtnService {
                     isUseSystemTheme: this.getIsUseSystemTheme(),
                     cmds: this.getCmds(),
                     showDialog: false,
+                    editingExistingCommand: false,
+                    showParameterDialog: false,
+                    parameterFields: [],
+                    pendingCmd: null,
+                    pendingEditBeforeSend: false,
                     showContextMenu: false,
                     contextMenuX: 0,
                     contextMenuY: 0,
@@ -179,7 +200,39 @@ export class CmdBtnService {
             },
             methods: {
                 sendCmd(cmd) {
-                    thisVar.sendCmdToFocusTab(cmd, this.editBeforeSend)
+                    const parameterNames = thisVar.extractParameterNames(cmd.text)
+                    if (parameterNames.length === 0) {
+                        thisVar.sendCmdToFocusTab(cmd, this.editBeforeSend)
+                        return
+                    }
+
+                    this.parameterFields = parameterNames.map(name => ({ name, value: '' }))
+                    this.pendingCmd = { ...cmd }
+                    this.pendingEditBeforeSend = this.editBeforeSend
+                    this.showParameterDialog = true
+                    this.showContextMenu = false
+                },
+                cancelParameterDialog() {
+                    this.showParameterDialog = false
+                    this.parameterFields = []
+                    this.pendingCmd = null
+                    this.pendingEditBeforeSend = false
+                },
+                executeParameterizedCmd() {
+                    if (!this.pendingCmd) {
+                        this.cancelParameterDialog()
+                        return
+                    }
+
+                    let resolvedText = this.pendingCmd.text
+                    for (const parameter of this.parameterFields) {
+                        resolvedText = thisVar.replaceParameter(resolvedText, parameter.name, parameter.value)
+                    }
+
+                    const resolvedCmd = { ...this.pendingCmd, text: resolvedText }
+                    const editBeforeSend = this.pendingEditBeforeSend
+                    this.cancelParameterDialog()
+                    thisVar.sendCmdToFocusTab(resolvedCmd, editBeforeSend)
                 },
                 toggleMinimized() {
                     this.minimized = !this.minimized
@@ -213,11 +266,13 @@ export class CmdBtnService {
                         group: 'default',
                         appendCR: true,
                     }
+                    this.editingExistingCommand = false
                     this.showDialog = true
                     this.showContextMenu = false
                 },
                 closeDialog() {
                     this.showDialog = false
+                    this.editingExistingCommand = false
                 },
                 saveCommand() {
                     if (!this.newCmd.name || !this.newCmd.text) {
@@ -230,6 +285,7 @@ export class CmdBtnService {
                     const existingIndex = thisVar.config.store.qc.cmds.findIndex(c => c.name === this.newCmd.name)
                     if (existingIndex >= 0) {
                         thisVar.config.store.qc.cmds[existingIndex] = {
+                            ...thisVar.config.store.qc.cmds[existingIndex],
                             name: this.newCmd.name,
                             text: this.newCmd.text,
                             description: this.newCmd.description || '',
@@ -257,6 +313,7 @@ export class CmdBtnService {
                 },
                 editCommand(cmd) {
                     this.newCmd = { ...cmd }
+                    this.editingExistingCommand = true
                     this.showContextMenu = false
                     this.showDialog = true
                 },
@@ -410,6 +467,26 @@ export class CmdBtnService {
                 document.onmousemove = null;
             }
         }
+    }
+
+    extractParameterNames(text: string): string[] {
+        const regex = /\$\{(.*?)\}/g
+        const names: string[] = []
+        const seen = new Set<string>()
+        let match: RegExpExecArray | null
+
+        while ((match = regex.exec(text)) !== null) {
+            const name = match[1]
+            if (!seen.has(name)) {
+                seen.add(name)
+                names.push(name)
+            }
+        }
+        return names
+    }
+
+    replaceParameter(text: string, name: string, value: string): string {
+        return text.split(`\${${name}}`).join(value)
     }
 
     sendCmdToFocusTab(cmd, editBeforeSend = false) {

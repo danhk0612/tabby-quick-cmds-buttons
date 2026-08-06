@@ -8,16 +8,18 @@ This fork updates the original plugin UI so it follows Tabby's active theme inst
 
 - Quick Command groups shown as tabs
 - Command buttons that follow Tabby's current theme
+- `${name}` parameter prompts compatible with `tabby-quick-cmds` command syntax
+- Repeated parameters are prompted once and replaced everywhere in the command
 - Active tab can be clicked again to collapse its command list
 - Compact minimize / restore behavior
 - Add, edit and delete Quick Commands from the panel
-- **Edit first** mode to insert a command without immediately pressing Enter
+- **Edit first** mode to insert a resolved command without immediately pressing Enter
 - Draggable and resizable panel
 - Light, dark and custom Tabby theme support
 
 ## Requirement
 
-Install **tabby-quick-cmds** first and create Quick Commands there. This plugin uses the commands stored in Tabby's `qc.cmds` configuration.
+Install **tabby-quick-cmds** first and create Quick Commands there. This plugin uses the commands stored in Tabby's `qc.cmds` configuration and follows its `${name}` parameter syntax when commands are launched from the button panel.
 
 ## Installation
 
@@ -56,18 +58,11 @@ Compiled files are written to `dist/`.
 
 ## Publishing
 
-Releases are published to npm from GitHub Actions when a `v*` tag is pushed.
+A change to the version in `package.json` that is merged into `master` triggers `.github/workflows/nodejs.yml` and publishes the new version to npm automatically.
 
-npm Trusted Publishing is configured for this repository and `.github/workflows/nodejs.yml`, so the workflow publishes through GitHub OIDC without an `NPM_TOKEN` secret.
+npm Trusted Publishing is configured for this repository and workflow, so publishing uses GitHub OIDC without an `NPM_TOKEN` secret.
 
-Release example:
-
-```bash
-git tag v1.3.1
-git push origin v1.3.1
-```
-
-The package version in `package.json` must match the release version before tagging.
+For each release, update `package.json` to a new npm version in the release pull request. Merge only after CI passes.
 
 ## Upstream
 
