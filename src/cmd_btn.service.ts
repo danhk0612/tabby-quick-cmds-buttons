@@ -109,7 +109,7 @@ export class CmdBtnService {
                         <p class="quick-cmd-dialog-description">Enter values for the variables used by this Quick Command.</p>
                         <div v-for="parameter in parameterFields" :key="parameter.name" class="quick-cmd-form-group">
                             <label class="quick-cmd-form-label">{{ parameter.name }}</label>
-                            <input v-model="parameter.value" type="text" class="form-control quick-cmd-form-control" :placeholder="'Value for ${' + parameter.name + '}'" autocomplete="off" @click.stop />
+                            <input v-model="parameter.value" type="text" class="form-control quick-cmd-form-control" :placeholder="'Value for ' + parameter.name" autocomplete="off" @click.stop />
                         </div>
                         <div class="quick-cmd-dialog-actions">
                             <button @click="cancelParameterDialog" class="btn btn-secondary">Cancel</button>
