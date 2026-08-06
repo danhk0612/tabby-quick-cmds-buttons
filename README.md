@@ -58,18 +58,11 @@ Compiled files are written to `dist/`.
 
 ## Publishing
 
-Releases are published to npm from GitHub Actions when a `v*` tag is pushed.
+A change to the version in `package.json` that is merged into `master` triggers `.github/workflows/nodejs.yml` and publishes the new version to npm automatically.
 
-npm Trusted Publishing is configured for this repository and `.github/workflows/nodejs.yml`, so the workflow publishes through GitHub OIDC without an `NPM_TOKEN` secret.
+npm Trusted Publishing is configured for this repository and workflow, so publishing uses GitHub OIDC without an `NPM_TOKEN` secret.
 
-Release example:
-
-```bash
-git tag v1.3.1
-git push origin v1.3.1
-```
-
-The package version in `package.json` must match the release version before tagging.
+For each release, update `package.json` to a new npm version in the release pull request. Merge only after CI passes.
 
 ## Upstream
 
